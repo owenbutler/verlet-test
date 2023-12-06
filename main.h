@@ -49,4 +49,14 @@ const float quick_check = (BALL_SIZE) * (BALL_SIZE);
 int nextBallSpawn = 0;
 
 
+void update_all(float delta_time);
+
+int grid_index_for(ball* ball);
+void place_ball_in_grid_at(int ball_index, int grid_index);
+
+void collisions();
+void check_collisions(collision_grid_cell* cell1, collision_grid_cell* cell2);
+void check_collision(ball* ball1, ball* ball2);
+
 void dumpColors();
+void check_spawn_new_ball();

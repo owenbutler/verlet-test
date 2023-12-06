@@ -8,6 +8,71 @@
 #include "colors.h"
 
 
+int main(int argc, char* argv[]) {
+
+	init_SDL();
+
+	SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+
+	SDL_Texture* ballTexture = IMG_LoadTexture(gRenderer, "circle.png");
+	if (ballTexture == NULL) {
+		printf("Failed to load PNG: %s\n", SDL_GetError());
+		exit(1);
+	}
+
+	float scaleFactor = (float)SCREEN_WIDTH / 1280.0f;
+
+	SDL_Rect dstrect = { .x = 1280 / 2, .y = 720 / 2, .w = (int)(BALL_SIZE / scaleFactor), .h = (int)(BALL_SIZE / scaleFactor) };
+
+	while (1) {
+		tick_start();
+
+		SDL_RenderClear(gRenderer);
+
+		doInput();
+
+		check_spawn_new_ball();
+
+		if (gInputs.resetBalls) {
+			gTotalBalls = 0;
+		}
+
+		if (gInputs.dumpImages) {
+			dumpColors();
+		}
+
+		if (gInputs.start) {
+			spawnBalls = true;
+		}
+
+		// update
+		float delta_time = 16.0f / (float)NUM_STEPS / 1000.0f;
+		for (int step = 0; step < NUM_STEPS; step++) {
+			collisions();
+			update_all(delta_time);
+		}
+
+		// render
+		for (int i = 0; i < gTotalBalls; i++) {
+			ball* pBall = gBalls + i;
+
+			int half = pBall->w / 2;
+
+			SDL_SetTextureColorMod(ballTexture, pBall->r, pBall->g, pBall->b);
+			dstrect.x = (int)((pBall->x - half) / scaleFactor);
+			dstrect.y = (int)((pBall->y - half) / scaleFactor);
+			SDL_RenderCopy(gRenderer, ballTexture, NULL, &dstrect);
+		}
+
+		SDL_RenderPresent(gRenderer);
+
+		tick_end();
+	}
+
+	return 0;
+}
+
+
 void update_all(float delta_time) {
 	float accelX = 0.0f;
 	float accelY = 1000.0f;
@@ -125,7 +190,6 @@ void collisions() {
 }
 
 void check_spawn_new_ball() {
-
 	if (!spawnBalls) {
 		return;
 	}
@@ -189,70 +253,6 @@ void check_spawn_new_ball() {
 
 }
 
-
-int main(int argc, char* argv[]) {
-
-	init_SDL();
-
-	SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
-
-	SDL_Texture* ballTexture = IMG_LoadTexture(gRenderer, "circle.png");
-	if (ballTexture == NULL) {
-		printf("Failed to load PNG: %s\n", SDL_GetError());
-		exit(1);
-	}
-
-	float scaleFactor = (float)SCREEN_WIDTH / 1280.0f;
-
-	SDL_Rect dstrect = {.x = 1280/2, .y = 720/2, .w = (int) (BALL_SIZE / scaleFactor), .h = (int) (BALL_SIZE / scaleFactor)};
-
-	while (1) {
-		tick_start();
-
-		SDL_RenderClear(gRenderer);
-
-		doInput();
-
-		check_spawn_new_ball();
-
-		if (gInputs.resetBalls) {
-			gTotalBalls = 0;
-		}
-
-		if (gInputs.dumpImages) {
-			dumpColors();
-		}
-
-		if (gInputs.start) {
-			spawnBalls = true;
-		}
-
-		// update
-		float delta_time = 16.0f / (float) NUM_STEPS / 1000.0f;		
-		for (int step = 0; step < NUM_STEPS; step++) {
-			collisions();
-			update_all(delta_time);
-		}
-
-		// render
-		for (int i = 0; i < gTotalBalls; i++) {
-			ball* pBall = gBalls + i;
-
-			int half = pBall->w / 2;
-
-			SDL_SetTextureColorMod(ballTexture, pBall->r, pBall->g, pBall->b);
-			dstrect.x = (int) ((pBall->x - half) / scaleFactor);
-			dstrect.y = (int) ((pBall->y - half) / scaleFactor);
-			SDL_RenderCopy(gRenderer, ballTexture, NULL, &dstrect);
-		}
-
-		SDL_RenderPresent(gRenderer);
-
-		tick_end();
-	}
-
-	return 0;
-}
 
 void dumpColors() {
 
